@@ -1,6 +1,6 @@
 # Custom PC Game Launcher
 
-A personal, console-inspired desktop game launcher for Windows built with Electron, React, and Three.js. It brings a sleek PlayStation-style interface—complete with 3D physical game cases and local library management—to your PC and Steam games.
+A personal, console-inspired desktop game launcher for Windows built with Electron, React, and Three.js. It brings a sleek console--style interface—complete with 3D physical game cases and local library management—to your PC and Steam games.
 
 ## What This Project Does
 - **Unified Game Library:** Launches local Windows `.exe` games and Steam shortcuts (`steam://rungameid/...`) from one customizable home screen.
