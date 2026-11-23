@@ -1,16 +1,16 @@
 # Custom PC Game Launcher
 
-A personal, console-inspired desktop game launcher for Windows built with Electron, React, and Three.js. It brings a sleek PlayStation-style interface—complete with controller navigation, 3D game cases, and playtime tracking—to your local PC and Steam games.
+A personal, console-inspired desktop game launcher for Windows built with Electron, React, and Three.js. It brings a sleek PlayStation-style interface—complete with 3D physical game cases and local library management—to your PC and Steam games.
 
 ## What This Project Does
 - **Unified Game Library:** Launches local Windows `.exe` games and Steam shortcuts (`steam://rungameid/...`) from one customizable home screen.
-- **Console Navigation & Views:** Supports full keyboard and PlayStation/Xbox gamepad navigation across a horizontal ribbon, 3D physical game shelf, or arcade cabinet mode.
-- **Built-In Tracking & Customization:** Automatically tracks hours played, lets you write quick per-game notes, and stores your library locally on your PC.
+- **3D Physical Game Shelf & Console UI:** Browse your library using keyboard arrow keys or your mouse across a horizontal ribbon or an interactive 3D shelf of physical game boxes.
+- **Local Library Storage:** Saves your custom game list, cover art, and launch paths directly on your PC.
 
 ## Tech Stack
 - **Desktop Wrapper:** Electron
 - **Frontend & UI:** React, Tailwind CSS, Framer Motion
-- **3D Shelf / Arcade Views:** Three.js (`@react-three/fiber`)
+- **3D Game Shelf:** Three.js (`@react-three/fiber`)
 
 ## How to Test It (Windows)
 1. Click **[Releases](../../releases)** on the right side of this page and download the `.exe` under **Assets**.
