@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@keyframes ps-logo-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+    filter: blur(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes ps-glow {
+  0%, 100% {
+    text-shadow:
+      0 0 20px rgba(59, 130, 246, 0.9),
+      0 0 60px rgba(59, 130, 246, 0.5),
+      0 0 120px rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    text-shadow:
+      0 0 30px rgba(96, 165, 250, 1),
+      0 0 90px rgba(59, 130, 246, 0.7),
+      0 0 160px rgba(37, 99, 235, 0.5);
+  }
+}
+
+@keyframes ps-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ps-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.ps-logo {
+  animation:
+    ps-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both,
+    ps-glow 2.4s ease-in-out 0.9s infinite;
+}
+
+.ps-subtitle {
+  animation: ps-fade-up 0.8s ease-out 0.7s both;
+}
+
+.ps-scanline {
+  animation: ps-scan 3s linear infinite;
+}
