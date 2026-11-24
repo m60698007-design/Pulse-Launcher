@@ -3,13 +3,15 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { Html, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { colorFromString, lighten, makeSpineTexture, makeBackTexture, getFallbackCoverDataUrl } from '../three/textures'
+import { STATUS_META } from '../meta'
 
 const CASE_W = 0.62   // spine-to-spine width (x)
 const CASE_H = 0.92   // height (y)
 const CASE_D = 0.09   // thickness/depth (z)
 const SHELF_Y = -0.62 // top surface of the shelf plank
+export const CASE_SPACING = CASE_W + 0.07
 
-export default function GameCase({ game, index, count, selected, onSelect, onLaunch }) {
+export default function GameCase({ game, index, count, selected, flipped = false, spinRef, resetNonce = 0, onSelect, onLaunch }) {
   const group = useRef()
   const mesh = useRef()
   const { gl } = useThree()
@@ -20,7 +22,7 @@ export default function GameCase({ game, index, count, selected, onSelect, onLau
   const pulled = useRef(0) // 0 = on shelf, 1 = fully pulled out
 
   // layout: side by side centered on x axis
-  const spacing = CASE_W + 0.07
+  const spacing = CASE_SPACING
   const x = (index - (count - 1) / 2) * spacing
   const restY = SHELF_Y + CASE_H / 2 + 0.01
 
@@ -29,6 +31,23 @@ export default function GameCase({ game, index, count, selected, onSelect, onLau
   const coverUrl = game.coverDataUrl || (game.cover ? null : getFallbackCoverDataUrl(game.name))
   const coverTex = useTexture(coverUrl || getFallbackCoverDataUrl(game.name))
   coverTex.colorSpace = THREE.SRGBColorSpace
+  coverTex.anisotropy = 8
+
+  // Case finish -> PBR material props (Steelbook = metallic, Holographic = iridescent)
+  const finish = game.finish || 'standard'
+  const finishProps = useMemo(() => {
+    switch (finish) {
+      case 'steelbook':
+        return { roughness: 0.22, metalness: 0.9, clearcoat: 0.7, clearcoatRoughness: 0.2, envMapIntensity: 1.5 }
+      case 'holographic':
+        return { roughness: 0.15, metalness: 0.65, clearcoat: 1, clearcoatRoughness: 0.1, iridescence: 1, iridescenceIOR: 1.3, envMapIntensity: 1.6 }
+      default:
+        return { roughness: 0.55, metalness: 0.05, envMapIntensity: 1 }
+    }
+  }, [finish])
+  const coverEnv = finish === 'standard' ? 1 : 1.35
+
+  const statusMeta = STATUS_META[game.status || 'backlog'] || STATUS_META.backlog
 
   const spineTex = useMemo(() => makeSpineTexture(game.name || 'Game', spineColor), [game.name, spineColor])
   const spineTexM = useMemo(() => makeSpineTexture(game.name || 'Game', spineColor, true), [game.name, spineColor])
@@ -72,8 +91,25 @@ export default function GameCase({ game, index, count, selected, onSelect, onLau
     }
   }, [selected, gl])
 
+  // reset drag rotation when the case is deselected or the parent asks for a reset
+  useEffect(() => {
+    if (!selected || resetNonce) {
+      targetRot.current = { x: 0, y: 0 }
+      setDragging(false)
+    }
+  }, [selected, resetNonce])
+
   useFrame((state, dt) => {
     if (!group.current) return
+
+    // right-stick live rotation while selected
+    if (selected && spinRef && spinRef.current) {
+      const { x, y } = spinRef.current
+      if (x || y) {
+        targetRot.current.y += x * dt * 2.6
+        targetRot.current.x = THREE.MathUtils.clamp(targetRot.current.x + y * dt * 2.0, -0.7, 0.7)
+      }
+    }
 
     // pull-out amount eases toward 1 when selected
     pulled.current = THREE.MathUtils.damp(pulled.current, selected ? 1 : 0, 6, dt)
@@ -84,8 +120,9 @@ export default function GameCase({ game, index, count, selected, onSelect, onLau
     group.current.position.z = THREE.MathUtils.damp(group.current.position.z, targetZ, 6, dt)
     group.current.position.y = THREE.MathUtils.damp(group.current.position.y, targetY, 6, dt)
 
-    // rotation eases toward drag target; idle slowly faces forward when shelved
-    const targetRY = selected ? targetRot.current.y : 0
+    // rotation eases toward drag target; 180° flip shows the back cover
+    const baseY = flipped && selected ? Math.PI : 0
+    const targetRY = baseY + (selected ? targetRot.current.y : 0)
     const targetRX = selected ? targetRot.current.x : 0
     group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, targetRY, dragging ? 30 : 8, dt)
     group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, targetRX, dragging ? 30 : 8, dt)
@@ -127,13 +164,28 @@ export default function GameCase({ game, index, count, selected, onSelect, onLau
       >
         <boxGeometry args={[CASE_W, CASE_H, CASE_D]} />
         {/* material order: +x, -x, +y, -y, +z (front), -z (back) */}
-        <meshStandardMaterial attach="material-0" map={spineTex} roughness={0.55} metalness={0.05} />
-        <meshStandardMaterial attach="material-1" map={spineTexM} roughness={0.55} metalness={0.05} />
-        <meshStandardMaterial attach="material-2" color={edge} roughness={0.7} />
-        <meshStandardMaterial attach="material-3" color={edge} roughness={0.7} />
-        <meshStandardMaterial attach="material-4" map={coverTex} roughness={0.35} metalness={0.02} />
-        <meshStandardMaterial attach="material-5" map={backTex} roughness={0.6} />
+        <meshPhysicalMaterial attach="material-0" map={spineTex} {...finishProps} />
+        <meshPhysicalMaterial attach="material-1" map={spineTexM} {...finishProps} />
+        <meshPhysicalMaterial attach="material-2" color={edge} {...finishProps} />
+        <meshPhysicalMaterial attach="material-3" color={edge} {...finishProps} />
+        <meshStandardMaterial attach="material-4" map={coverTex} roughness={0.35} metalness={0.02} envMapIntensity={coverEnv} />
+        <meshPhysicalMaterial attach="material-5" map={backTex} {...finishProps} />
       </mesh>
+
+      {/* completion status badge floating above the case */}
+      <Html
+        position={[0, CASE_H / 2 + 0.14, 0]}
+        center
+        zIndexRange={[5, 0]}
+        style={{ pointerEvents: 'none' }}
+      >
+        <div
+          className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur ${statusMeta.chip}`}
+          title={`${statusMeta.label} · ${finish === 'standard' ? 'Standard' : finish === 'steelbook' ? 'Steelbook' : 'Holographic'} finish`}
+        >
+          {statusMeta.label}
+        </div>
+      </Html>
 
       {/* thin glowing base strip when selected */}
       {selected && (

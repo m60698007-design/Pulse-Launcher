@@ -1,7 +1,8 @@
-import { Suspense, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Environment, Lightformer } from '@react-three/drei'
-import GameCase from './GameCase'
+import * as THREE from 'three'
+import GameCase, { CASE_SPACING } from './GameCase'
 
 const SHELF_W = 30
 const SHELF_D = 2.2
@@ -35,10 +36,42 @@ function Shelf() {
   )
 }
 
-export default function ShelfScene({ games, onLaunch }) {
-  const [selectedId, setSelectedId] = useState(null)
+// Slides the row of cases so the selected one stays in view.
+function CasesRig({ games, selectedId, flippedId, spinRef, resetNonce, onSelect, onLaunch }) {
+  const rig = useRef()
 
-  const handleSelect = (id) => setSelectedId((cur) => (cur === id ? null : id))
+  useFrame((_, dt) => {
+    if (!rig.current) return
+    const idx = games.findIndex((g) => g.id === selectedId)
+    const selX = idx >= 0 ? (idx - (games.length - 1) / 2) * CASE_SPACING : 0
+    const halfSpan = ((games.length - 1) / 2) * CASE_SPACING
+    const limit = Math.max(0, halfSpan - 4.5)
+    const desired = THREE.MathUtils.clamp(-selX, -limit, limit)
+    rig.current.position.x = THREE.MathUtils.damp(rig.current.position.x, desired, 5, dt)
+  })
+
+  return (
+    <group ref={rig}>
+      {games.map((game, i) => (
+        <GameCase
+          key={game.id}
+          game={game}
+          index={i}
+          count={games.length}
+          selected={selectedId === game.id}
+          flipped={flippedId === game.id}
+          spinRef={spinRef}
+          resetNonce={resetNonce}
+          onSelect={onSelect}
+          onLaunch={onLaunch}
+        />
+      ))}
+    </group>
+  )
+}
+
+export default function ShelfScene({ games, selectedId, flippedId, spinRef, resetNonce, onSelect, onLaunch }) {
+  const handleSelect = (id) => onSelect(selectedId === id ? null : id)
 
   return (
     <Canvas
@@ -46,7 +79,7 @@ export default function ShelfScene({ games, onLaunch }) {
       dpr={[1, 2]}
       camera={{ position: [0, 0.55, games.length > 8 ? 7.5 : 5.2], fov: 42, near: 0.1, far: 60 }}
       gl={{ antialias: true }}
-      onPointerMissed={() => setSelectedId(null)}
+      onPointerMissed={() => onSelect(null)}
       style={{ background: 'radial-gradient(ellipse at 50% 30%, #141428 0%, #0b0b12 70%)' }}
     >
       <Suspense fallback={null}>
@@ -70,17 +103,15 @@ export default function ShelfScene({ games, onLaunch }) {
         <Shelf />
         <ContactShadows position={[0, SHELF_Y + 0.001, 0.4]} opacity={0.55} scale={30} blur={2.2} far={2} resolution={512} color="#000000" />
 
-        {games.map((game, i) => (
-          <GameCase
-            key={game.id}
-            game={game}
-            index={i}
-            count={games.length}
-            selected={selectedId === game.id}
-            onSelect={handleSelect}
-            onLaunch={onLaunch}
-          />
-        ))}
+        <CasesRig
+          games={games}
+          selectedId={selectedId}
+          flippedId={flippedId}
+          spinRef={spinRef}
+          resetNonce={resetNonce}
+          onSelect={handleSelect}
+          onLaunch={onLaunch}
+        />
 
         {/* image-based lighting for nicer case materials */}
         <Environment resolution={64}>

@@ -110,14 +110,16 @@ export function makeSpineTexture(title, color, mirror = false) {
     ctx.textAlign = 'center'
     ctx.font = '600 26px "Segoe UI", Arial, sans-serif'
     ctx.fillStyle = 'rgba(255,255,255,0.55)'
-    ctx.fillText('MyPS5', 0, 0)
+    ctx.fillText('PULSE', 0, 0)
     ctx.restore()
   })
 }
 
 // Back cover: title, notes, hours played
 export function makeBackTexture(game, color) {
-  return makeCanvas(768, 1024, (ctx, w, h) => {
+  return makeCanvas(1024, 1365, (ctx) => {
+    const w = 768, h = 1024 // logical layout space; canvas is 4/3 supersampled
+    ctx.scale(4 / 3, 4 / 3)
     const [r, g, b] = hexToRgb(color)
     const grad = ctx.createLinearGradient(0, 0, 0, h)
     grad.addColorStop(0, `rgb(${Math.round(r * 0.5)},${Math.round(g * 0.5)},${Math.round(b * 0.5)})`)
@@ -138,7 +140,7 @@ export function makeBackTexture(game, color) {
 
     ctx.fillStyle = 'rgba(255,255,255,0.5)'
     ctx.font = '600 30px "Segoe UI", Arial, sans-serif'
-    ctx.fillText('MYPS5 LIBRARY', pad, pad)
+    ctx.fillText('PULSE LIBRARY', pad, pad)
 
     ctx.fillStyle = '#ffffff'
     ctx.font = '800 64px "Segoe UI", Arial, sans-serif'

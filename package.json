@@ -1,7 +1,8 @@
 {
-  "name": "myps5launcher",
-  "version": "1.0.0",
+  "name": "pulse-launcher",
+  "version": "0.3.0-beta",
   "private": true,
+  "description": "Pulse Launcher — a couch-friendly PC game launcher with a 3D shelf and gamepad support",
   "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
@@ -9,11 +10,12 @@
     "start": "electron .",
     "preview": "vite preview",
     "dist": "npm run build && electron-builder",
+    "dist:win": "electron-builder --win",
     "dist:dir": "npm run build && electron-builder --dir"
   },
   "build": {
-    "appId": "com.myps5launcher.app",
-    "productName": "MyPS5Launcher",
+    "appId": "com.pulselauncher.app",
+    "productName": "Pulse Launcher",
     "directories": {
       "output": "dist"
     },
@@ -41,7 +43,7 @@
       "forceCodeSigning": false
     },
     "portable": {
-      "artifactName": "MyPS5Launcher-Portable-${version}.${ext}"
+      "artifactName": "PulseLauncher-Portable-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,

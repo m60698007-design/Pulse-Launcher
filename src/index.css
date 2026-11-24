@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@keyframes ps-logo-in {
+@keyframes boot-logo-in {
   0% {
     opacity: 0;
     transform: scale(0.6);
@@ -18,7 +18,7 @@
   }
 }
 
-@keyframes ps-glow {
+@keyframes boot-glow {
   0%, 100% {
     text-shadow:
       0 0 20px rgba(59, 130, 246, 0.9),
@@ -33,7 +33,7 @@
   }
 }
 
-@keyframes ps-fade-up {
+@keyframes boot-fade-up {
   from {
     opacity: 0;
     transform: translateY(14px);
@@ -44,7 +44,7 @@
   }
 }
 
-@keyframes ps-scan {
+@keyframes boot-scan {
   from {
     transform: translateY(-100%);
   }
@@ -53,16 +53,16 @@
   }
 }
 
-.ps-logo {
+.boot-logo {
   animation:
-    ps-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both,
-    ps-glow 2.4s ease-in-out 0.9s infinite;
+    boot-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both,
+    boot-glow 2.4s ease-in-out 0.9s infinite;
 }
 
-.ps-subtitle {
-  animation: ps-fade-up 0.8s ease-out 0.7s both;
+.boot-subtitle {
+  animation: boot-fade-up 0.8s ease-out 0.7s both;
 }
 
-.ps-scanline {
-  animation: ps-scan 3s linear infinite;
+.boot-scanline {
+  animation: boot-scan 3s linear infinite;
 }

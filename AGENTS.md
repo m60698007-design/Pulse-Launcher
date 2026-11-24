@@ -1,4 +1,4 @@
-# MyPS5Launcher
+# Pulse Launcher
 
 Electron + Vite + React + Tailwind desktop launcher.
 
